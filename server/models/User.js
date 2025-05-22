@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
-
+/* 
+This  is user.js of hotel booking
+*/
 const userSchema =mongoose.Schema({
     _id:{type: String, required:true},
     username:{type: String, required:true},
