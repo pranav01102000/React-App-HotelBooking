@@ -13,24 +13,27 @@ const clerkWebhooks = async(req,res)=>{
 
         };
         //Verifying Headers
-        await whook.verify(json.stringify(req.body),headers)
+        // CORRECTED: Changed 'json.stringify' to 'JSON.stringify'
+        await whook.verify(JSON.stringify(req.body),headers)
         //Getting Data from request body
         const{data, type}= req.body
 
-        const userData ={ 
-               _id: data.id,
-               email: data.email_addresses[0].email_address,
-               username: data.first_name + "" + data.last_name,
-               image: data.image_url,
+        const userData ={
+                _id: data.id, // Ensure your User model's _id field is of type String
+                email: data.email_addresses[0].email_address,
+                // CORRECTED: Added a space between first_name and last_name for username
+                username: data.first_name + " " + data.last_name,
+                image: data.image_url,
             }
-         //Switch Cases for different Events
-         switch (type){
+          //Switch Cases for different Events
+          switch (type){
             case "user.created":{
                  await User.create(userData);
                  break;
                 }
             case "user.updated":{
-                 await User.findByIdAndUpdate(data.id , userData);
+                 // CORRECTED: Added { new: true, upsert: true } for proper update/creation behavior
+                 await User.findByIdAndUpdate(data.id , userData, { new: true, upsert: true });
                  break;
                 }
             case "user.deleted":{
@@ -39,12 +42,13 @@ const clerkWebhooks = async(req,res)=>{
                 }
 
             default:
-                break;
-         }
-         res.json({success:true, message:"Webhook Recieved"})
+                 break;
+          }
+          res.json({success:true, message:"Webhook Recieved"})
     }catch(error){
-        console.log(error.message);
-        res.json( {success:false, message:error.message});
+        // CORRECTED: Changed status to 500 for server errors
+        console.error("Webhook processing error:", error.message); // Use console.error for errors
+        res.status(500).json( {success:false, message:error.message});
 
     }
 }
